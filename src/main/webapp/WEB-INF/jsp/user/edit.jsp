@@ -127,7 +127,7 @@
 				<ol class="breadcrumb">
 				  <li><a href="#">首页</a></li>
 				  <li><a href="#">数据列表</a></li>
-				  <li class="active">新增</li>
+				  <li class="active">修改</li>
 				</ol>
 			<div class="panel panel-default">
               <div class="panel-heading">表单数据<div style="float:right;cursor:pointer;" data-toggle="modal" data-target="#myModal"><i class="glyphicon glyphicon-question-sign"></i></div></div>
@@ -135,18 +135,18 @@
 				<form role="form">
 				  <div class="form-group">
 					<label for="exampleInputPassword1">登陆账号</label>
-					<input type="text" class="form-control" id="loginacct" placeholder="请输入登陆账号">
+					<input type="text" class="form-control" id="loginacct" value="${user.loginacct}" placeholder="请输入登陆账号">
 				  </div>
 				  <div class="form-group">
 					<label for="exampleInputPassword1">用户名称</label>
-					<input type="text" class="form-control" id="username" placeholder="请输入用户名称">
+					<input type="text" class="form-control" id="username" value="${user.username}" placeholder="请输入用户名称">
 				  </div>
 				  <div class="form-group">
 					<label for="exampleInputEmail1">邮箱地址</label>
-					<input type="email" class="form-control" id="email" placeholder="请输入邮箱地址">
+					<input type="email" class="form-control" id="email" value="${user.email}" placeholder="请输入邮箱地址">
 					<p class="help-block label label-warning">请输入合法的邮箱地址, 格式为： xxxx@xxxx.com</p>
 				  </div>
-				  <button id="insertBtn" type="button" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> 新增</button>
+				  <button id="updateBtn" type="button" class="btn btn-success"><i class="glyphicon glyphicon-pencil"></i> 修改</button>
 				  <button type="reset" class="btn btn-danger"><i class="glyphicon glyphicon-refresh"></i> 重置</button>
 				</form>
 			  </div>
@@ -197,7 +197,7 @@
 					}
 				});
 				
-				$("#insertBtn").click(function(){
+				$("#updateBtn").click(function(){
 					var loginacct  = $("#loginacct").val();
 					if(loginacct == ""){
 						layer.msg("登录账号不能为空，请输入", {time:2000, icon:5, shift:6}, function(){
@@ -207,8 +207,9 @@
 					var loadingIndex = null;
 					$.ajax({
 						type:"POST",
-						url:"${APP_PATH}/user/insert",
+						url:"${APP_PATH}/user/updateUser",
 						data:{
+							"id":${user.id},
 							"loginacct":loginacct,
 							"username":$("#username").val(),
 							"email":$("#email").val()
@@ -219,11 +220,11 @@
 						success:function(result){
 							layer.close(loadingIndex);
 							if(result.success){
-								layer.msg("用户信息保存成功", {time:1000, icon:6}, function(){
+								layer.msg("用户信息修改成功", {time:1000, icon:6}, function(){
 									 window.location.href="${APP_PATH}/user/index";
 								});
 							}else{
-								layer.msg("用户信息保存失败，请重新操作", {time:2000, icon:5, shift:6}, function(){
+								layer.msg("用户信息修改失败，请重新操作", {time:2000, icon:5, shift:6}, function(){
 								});
 							}
 						}

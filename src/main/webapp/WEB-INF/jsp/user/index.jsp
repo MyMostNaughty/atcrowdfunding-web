@@ -226,7 +226,7 @@ table tbody td:nth-child(even) {
             // 分页查询
             function pageQuery(pageno){
 	            var loadingIndex = null;
-	            var jsonData = {"pageno" : pageno,"pagesize" : 2};
+	            var jsonData = {"pageno" : pageno,"pagesize" : 10};
 	            if(likeflg){
 	            	jsonData.queryText  = $("#queryText").val();
 	            }
@@ -256,8 +256,8 @@ table tbody td:nth-child(even) {
 				                tableContent += '  <td>'+user.email+'</td>';
 				                tableContent += '  <td>';
 								tableContent += '      <button type="button" class="btn btn-success btn-xs"><i class=" glyphicon glyphicon-check"></i></button>';
-								tableContent += '      <button type="button" class="btn btn-primary btn-xs"><i class=" glyphicon glyphicon-pencil"></i></button>';
-								tableContent += '	  <button type="button" class="btn btn-danger btn-xs"><i class=" glyphicon glyphicon-remove"></i></button>';
+								tableContent += '      <button type="button" onclick="goUpdatePage('+user.id+')" class="btn btn-primary btn-xs"><i class=" glyphicon glyphicon-pencil"></i></button>';
+								tableContent += '	  <button type="button" onclick="deleteUser('+user.id+','+user.loginacct+')" class="btn btn-danger btn-xs"><i class=" glyphicon glyphicon-remove"></i></button>';
 								tableContent += '  </td>';
 				                tableContent += '</tr>';
             				});
@@ -285,6 +285,31 @@ table tbody td:nth-child(even) {
             		}
             		
             	})
+            };
+            
+            function goUpdatePage(id){
+            	window.location.href = "${APP_PATH}/user/edit?id="+id;
+            }
+            function deleteUser(id,loginacct){
+            	layer.confirm("删除用户信息【"+loginacct+"】,是否继续",  {icon: 3, title:'提示'}, function(cindex){
+            		//删除用户信息
+            		$.ajax({
+            			type:"POST",
+            			url:"${APP_PATH}/user/deleteUser",
+            			data:{id:id},
+            			success:function(result){
+            				if(result.success){
+            					pageQuery(1);
+            				}else{
+            					layer.msg("用户信息删除失败", {time:1000, icon:5, shift:6}, function(){
+								});
+            				}
+            			}
+            		});
+            		layer.close(cindex);
+				}, function(cindex){
+				    layer.close(cindex);
+				});
             }
             
         </script>
