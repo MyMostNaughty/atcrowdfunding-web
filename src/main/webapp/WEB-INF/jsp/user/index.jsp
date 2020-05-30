@@ -145,7 +145,7 @@ table tbody td:nth-child(even) {
 								<i class="glyphicon glyphicon-search"></i> 查询
 							</button>
 						</form>
-						<button type="button" class="btn btn-danger"
+						<button type="button" class="btn btn-danger" onclick="deleteUsers()"
 							style="float:right;margin-left:10px;">
 							<i class=" glyphicon glyphicon-remove"></i> 删除
 						</button>
@@ -156,11 +156,12 @@ table tbody td:nth-child(even) {
 						<br>
 						<hr style="clear:both;">
 						<div class="table-responsive">
+						<form id="userform">
 							<table class="table  table-bordered">
 								<thead>
 									<tr>
 										<th width="30">#</th>
-										<th width="30"><input type="checkbox"></th>
+										<th width="30"><input type="checkbox" id="allSelBox"></th>
 										<th>账号</th>
 										<th>名称</th>
 										<th>邮箱地址</th>
@@ -168,7 +169,7 @@ table tbody td:nth-child(even) {
 									</tr>
 								</thead>
 								<tbody id="userData">
-
+								
 								</tbody>
 								<tfoot>
 									<tr>
@@ -180,6 +181,7 @@ table tbody td:nth-child(even) {
 
 								</tfoot>
 							</table>
+						</form>
 						</div>
 					</div>
 				</div>
@@ -214,6 +216,13 @@ table tbody td:nth-child(even) {
 						likeflg = true;
 					}
 					pageQuery(1);
+				});
+				
+				$("#allSelBox").click(function(){
+					var flg = this.checked;
+					$("#userData :checkbox").each(function(){
+						this.checked = flg;
+					});
 				});
             });
             $("tbody .btn-success").click(function(){
@@ -250,12 +259,12 @@ table tbody td:nth-child(even) {
             				$.each(users,function(i,user){
             					tableContent += '<tr>';
 				                tableContent += '  <td>'+(i+1)+'</td>';
-								tableContent += '  <td><input type="checkbox"></td>';
+								tableContent += '  <td><input type="checkbox" name="userid" value="'+user.id+'"></td>';
 				                tableContent += '  <td>'+user.loginacct+'</td>';
 				                tableContent += '  <td>'+user.username+'</td>';
 				                tableContent += '  <td>'+user.email+'</td>';
 				                tableContent += '  <td>';
-								tableContent += '      <button type="button" class="btn btn-success btn-xs"><i class=" glyphicon glyphicon-check"></i></button>';
+								tableContent += '      <button type="button" onclick="goAssignPage('+user.id+')" class="btn btn-success btn-xs"><i class=" glyphicon glyphicon-check"></i></button>';
 								tableContent += '      <button type="button" onclick="goUpdatePage('+user.id+')" class="btn btn-primary btn-xs"><i class=" glyphicon glyphicon-pencil"></i></button>';
 								tableContent += '	  <button type="button" onclick="deleteUser('+user.id+','+user.loginacct+')" class="btn btn-danger btn-xs"><i class=" glyphicon glyphicon-remove"></i></button>';
 								tableContent += '  </td>';
@@ -289,7 +298,12 @@ table tbody td:nth-child(even) {
             
             function goUpdatePage(id){
             	window.location.href = "${APP_PATH}/user/edit?id="+id;
+            };
+            
+            function goAssignPage(id){
+            	window.location.href = "${APP_PATH}/user/assign?id="+id;
             }
+            
             function deleteUser(id,loginacct){
             	layer.confirm("删除用户信息【"+loginacct+"】,是否继续",  {icon: 3, title:'提示'}, function(cindex){
             		//删除用户信息
@@ -310,6 +324,35 @@ table tbody td:nth-child(even) {
 				}, function(cindex){
 				    layer.close(cindex);
 				});
+            };
+            
+            function deleteUsers(){
+            	var boxes = $("#userData :checkbox:checked");
+            	if(boxes.length == 0){
+            		layer.msg("请选择需要删除的用户信息", {time:1000, icon:5, shift:6}, function(){
+					});
+            	}else{
+            		layer.confirm("删除选择的用户信息,是否继续",  {icon: 3, title:'提示'}, function(cindex){
+	            		//删除选择用户信息
+	            		$.ajax({
+	            			type:"POST",
+	            			url:"${APP_PATH}/user/deleteUsers",
+	            			data:$("#userform").serialize(),
+	            			success:function(result){
+	            				if(result.success){
+	            					pageQuery(1);
+	            				}else{
+	            					layer.msg("用户信息删除失败", {time:1000, icon:5, shift:6}, function(){
+									});
+	            				}
+	            			}
+	            		});
+	            		layer.close(cindex);
+					}, function(cindex){
+					    layer.close(cindex);
+					});
+            	}
+            	
             }
             
         </script>
