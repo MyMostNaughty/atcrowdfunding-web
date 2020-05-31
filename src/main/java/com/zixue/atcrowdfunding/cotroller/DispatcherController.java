@@ -1,8 +1,10 @@
 package com.zixue.atcrowdfunding.cotroller;
 
 import java.io.UnsupportedEncodingException;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,17 +14,26 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.zixue.atcrowdfunding.bean.AjaxResult;
+import com.zixue.atcrowdfunding.bean.Permission;
 import com.zixue.atcrowdfunding.bean.User;
+import com.zixue.atcrowdfunding.service.PermissionService;
 import com.zixue.atcrowdfunding.service.UserService;
 
 @Controller
 public class DispatcherController {
 	@Autowired
 	private UserService userService;
+	@Autowired
+	private PermissionService permissionService;
 	
 	@RequestMapping("/login")
 	public String login(){
 		return "login";
+	}
+	
+	@RequestMapping("/error")
+	public String error(){
+		return "error";
 	}
 	
 	@RequestMapping("/main")
@@ -43,8 +54,31 @@ public class DispatcherController {
 		AjaxResult ajaxResult = new AjaxResult();
 		User dbuser = userService.queryLogin(user);
 		if(dbuser != null){
-			ajaxResult.setSuccess(true);
 			session.setAttribute("loginUser", dbuser);
+			
+			// 获取用户权限信息
+			Permission root = null;
+			Map<Integer, Permission> permissionMap = permissionService.queryPermissionMapByUser(dbuser);
+			if(permissionMap.size()>0){
+				Set<String> uriSet = new HashSet<>();
+				for (Permission p : permissionMap.values()) {
+					if(p.getUrl() != null && p.getUrl() != ""){
+						uriSet.add(session.getServletContext().getContextPath() + p.getUrl());
+					}
+					
+					Permission child = p;
+					if(child.getPid() == 0){
+						root = p;
+					}else{
+						Permission parent = permissionMap.get(child.getPid());
+						parent.getChildren().add(child);
+					}
+				}
+				session.setAttribute("authUriSet", uriSet);
+				session.setAttribute("rootPermission", root);
+			}
+			
+			ajaxResult.setSuccess(true);
 		}else{
 			ajaxResult.setSuccess(false);
 		}
